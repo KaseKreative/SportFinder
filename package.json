@@ -6,9 +6,12 @@
     "start": "node app.js"
   },
   "dependencies": {
+    "body-parser": "^1.14.1",
     "bower": "^1.5.3",
     "express": "3.4.8",
     "express-handlebars": "^2.0.1",
+    "express-session": "^1.12.0",
+    "jeet": "^6.1.2",
     "sha1": "^1.1.1"
   },
   "devDependencies": {
