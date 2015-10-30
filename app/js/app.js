@@ -26,6 +26,11 @@ var app = angular.module('app', ['ngRoute', 'firebase'])
 			 		
 			 		ref = new Firebase("https://thesportfinder.firebaseio.com/users/"+authData.uid);
 			 		$scope.users = $firebaseArray(ref);
+			 		var key = $scope.users.key();
+			 		console.log('key:', key);
+			 		var item = $scope.users.$getRecord(authData.uid);
+			 		// console.log($scope.users.$id);
+			 		console.log(item);
 			 		authData.facebook.uid = authData.uid;
 			 		$scope.users.$add(authData.facebook);
 			 		$rootScope.user = authData.facebook;
