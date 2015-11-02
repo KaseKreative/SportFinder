@@ -1,8 +1,11 @@
 <h1>Profile Page</h1>
-<img src="{[{user.profileImageURL}]}"/>
+<img ng-src="{[{user.profileImageURL}]}"/>
 <ul>
 	<li>ID : {[{user.id}]}</li>
 	<li>Name : {[{user.cachedUserProfile.name}]}</li>
 	<li>Gender : {[{user.cachedUserProfile.gender}]}</li>
 	<li>Link : {[{user.cachedUserProfile.link}]}</li>
 </ul>
+
+<textarea ng-model="user.description"></textarea>
+<button ng-click="saveChanges()">Save Changes</button>
