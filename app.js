@@ -5,7 +5,7 @@
 
 var express 	= require('express'),
  	http 		= require('http'),
- 	exphbs 		= require('express-handlebars')
+ 	exphbs 		= require('express-handlebars'),
 	path = require('path');
 
 var app = express();
