@@ -1,9 +1,15 @@
-var app = angular.module('app', ['ngRoute', 'firebase', 'uiGmapgoogle-maps'])
-	app.config(['$interpolateProvider','$routeProvider', 'uiGmapGoogleMapApiProvider', function ($interpolateProvider, $routeProvider, uiGmapGoogleMapApiProvider){
+var app = angular.module('app', ['ngRoute', 'firebase', 'uiGmapgoogle-maps', 'ngGPlaces'])
+	app.config(['$interpolateProvider','$routeProvider', 'uiGmapGoogleMapApiProvider', 'ngGPlacesAPIProvider', function ($interpolateProvider, $routeProvider, uiGmapGoogleMapApiProvider, ngGPlacesAPIProvider){
             uiGmapGoogleMapApiProvider.configure({
-            	key: 'AIzaSyBcwSefNOCksg0CrkHZo58QPKBggYLrFIc',
+            	key: 'AIzaSyB3ckqP-H2hCxXE6YYh6RXFhebNHWH43Rc',
             	v: '3.20',
             	libraries: 'places'
+            });
+            ngGPlacesAPIProvider.setDefaults({
+            	radius:5000,
+            	types: 'gym',
+            	nearbySearchKeys: ['name', 'reference', 'vicinity', 'rating', 'opening_hours', 'geometry'],
+            	placeDetailsKeys: ['rating', 'opening_hours', 'geometry']
             });
             $interpolateProvider.startSymbol('{[{');
             $interpolateProvider.endSymbol('}]}');
@@ -139,9 +145,6 @@ var app = angular.module('app', ['ngRoute', 'firebase', 'uiGmapgoogle-maps'])
 		if(!$scope.user){
  				$location.path('/');
  			}else{
- 				$scope.map = {}
- 				$scope.map.center = { latitude: 45, longitude: -73 };
- 				$scope.map.zoom =  8
  				function showPosition(position) {
  					var lat = position.coords.latitude;
  					var long = position.coords.longitude;
@@ -151,41 +154,32 @@ var app = angular.module('app', ['ngRoute', 'firebase', 'uiGmapgoogle-maps'])
  				}
  				navigator.geolocation.getCurrentPosition(showPosition);
 
- 			$scope.searchGym = function(){
- 				$rootScope.gymSearch = $scope.gym.search;
- 				console.log($rootScope.gymSearch);
- 				$location.path('/gymSearch');
- 			}
-
+ 				$scope.searchGym = function(){
+ 					$rootScope.gymSearch = $scope.gym.search;
+ 					console.log($rootScope.gymSearch);
+ 					$location.path('/gymSearch');
+ 				}
  			}
 	}]);
 
-	app.controller('gymSearchController', ['$scope', '$rootScope', '$firebaseObject', '$routeParams','$location', 'Map', function($scope, $rootScope, $firebaseObject, $routeParams, $location, Map){ 
+	app.controller('gymSearchController', ['$scope', '$rootScope', '$firebaseObject', '$routeParams','$location', 'ngGPlacesAPI', 'uiGmapGoogleMapApi', 'Map', function($scope, $rootScope, $firebaseObject, $routeParams, $location, ngGPlacesAPI, uiGmapGoogleMapApi, Map){ 
    			if(!$scope.user){
  				$location.path('/');
  			}else{
-    console.log($scope.gymSearch);
-    $scope.place = {};
-        Map.search($scope.gymSearch)
-        .then(
-            function(res) { // success
-                Map.addMarker(res);
-                $scope.place.name = res.name;
-                $scope.place.lat = res.geometry.location.lat();
-                $scope.place.lng = res.geometry.location.lng();
-            },
-            function(status) { // error
-                $scope.apiError = true;
-                $scope.apiStatus = status;
-            }
-        );
-    
-    $scope.send = function() {
-        alert($scope.place.name + ' : ' + $scope.place.lat + ', ' + $scope.place.lng);    
-    }
-    
-    Map.init();
-	}
+ 				$scope.map = {};
+
+ 				$scope.places = ngGPlacesAPI.nearbySearch({latitude: $scope.user.lat, longitude: $scope.user.long, name: $scope.gymSearch}).then(function(data){
+ 					console.log(data);
+ 					return data;
+ 				})
+
+ 				uiGmapGoogleMapApi.then(function(maps){
+ 					$scope.map.center = {latitude: $scope.user.lat, longitude: $scope.user.long}
+ 					$scope.map.zoom = 8;
+ 				});
+ 						Map.init($scope.user.lat, $scope.user.long);
+ 				
+	}	
 }]); 
 
 // =============================== SERVICES ====================================
@@ -194,9 +188,9 @@ var app = angular.module('app', ['ngRoute', 'firebase', 'uiGmapgoogle-maps'])
 
 app.service('Map', function($q) {
     
-    this.init = function() {
+    this.init = function(lat, long) {
         var options = {
-            center: new google.maps.LatLng($scope.user.lat, $scope.user.long),
+            center: new google.maps.LatLng(lat, long),
             zoom: 8,
             disableDefaultUI: true    
         }
@@ -204,10 +198,13 @@ app.service('Map', function($q) {
             document.getElementById("map"), options
         );
         this.places = new google.maps.places.PlacesService(this.map);
+    	console.log('This is Places INIT :', this.places);
     }
     
     this.search = function(str) {
         var d = $q.defer();
+        console.log('This is Places SEARCH :', this.places);
+        console.log(str, '----------');
         this.places.textSearch({query: str}, function(results, status) {
             if (status == 'OK') {
                 d.resolve(results[0]);
