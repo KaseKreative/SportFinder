@@ -167,18 +167,23 @@ var app = angular.module('app', ['ngRoute', 'firebase', 'uiGmapgoogle-maps', 'ng
  				$location.path('/');
  			}else{
  				$scope.map = {};
-
- 				$scope.places = ngGPlacesAPI.nearbySearch({latitude: $scope.user.lat, longitude: $scope.user.long, name: $scope.gymSearch}).then(function(data){
+                $scope.map.markers = []; 
+               
+ 				ngGPlacesAPI.nearbySearch({latitude: $scope.user.lat, longitude: $scope.user.long, name: $scope.gymSearch}).then(function(data){
  					console.log(data);
- 					return data;
- 				})
-
- 				uiGmapGoogleMapApi.then(function(maps){
- 					$scope.map.center = {latitude: $scope.user.lat, longitude: $scope.user.long}
- 					$scope.map.zoom = 8;
+                    $scope.places = data;
+                    $scope.map.markers = data;
+                    
  				});
- 						Map.init($scope.user.lat, $scope.user.long);
- 				
+                 uiGmapGoogleMapApi.then(function(maps){
+                    $scope.map.center = {latitude: $scope.user.lat, longitude: $scope.user.long}
+                    $scope.map.zoom = 8;
+                });
+
+                 $scope.markerClick = function(marker){
+                    console.log(marker);
+                 }
+             
 	}	
 }]); 
 
@@ -189,16 +194,18 @@ var app = angular.module('app', ['ngRoute', 'firebase', 'uiGmapgoogle-maps', 'ng
 app.service('Map', function($q) {
     
     this.init = function(lat, long) {
+        console.log(lat, ' , ', long);
         var options = {
             center: new google.maps.LatLng(lat, long),
             zoom: 8,
             disableDefaultUI: true    
         }
+        console.log(options);
         this.map = new google.maps.Map(
             document.getElementById("map"), options
         );
-        this.places = new google.maps.places.PlacesService(this.map);
-    	console.log('This is Places INIT :', this.places);
+        console.log(this.map);
+        // this.places = new google.maps.places.PlacesService(this.map);
     }
     
     this.search = function(str) {
@@ -214,14 +221,17 @@ app.service('Map', function($q) {
         return d.promise;
     }
     
-    this.addMarker = function(res) {
+    this.addMarkers = function(res) {
+        console.log(res.geometry.location.A,' , ',res.geometry.location.F);
+        myLatLng = new google.maps.LatLng(res.geometry.location.A, res.geometry.location.F);
+        console.log(myLatLng)
         if(this.marker) this.marker.setMap(null);
         this.marker = new google.maps.Marker({
             map: this.map,
-            position: res.geometry.location,
+            position: myLatLng,
             animation: google.maps.Animation.DROP
         });
-        this.map.setCenter(res.geometry.location);
+        this.marker.setMap(this.map);
     }
     
 });

@@ -1,3 +1,6 @@
 <h1>Gym Search Page</h1>
+<!-- {[{map.markers}]} -->
 <div id="map"></div>
-<ui-gmap-google-map center='map.center' zoom='map.zoom'></ui-gmap-google-map>
+<ui-gmap-google-map center='map.center' zoom='map.zoom'>
+	<ui-gmap-marker  ng-repeat="m in map.markers" click='markerClick(m)' options="{title: m.name}" coords="{latitude: m.geometry.location.A, longitude: m.geometry.location.F}" idKey="m.reference"></ui-gmap-marker>
+</ui-gmap-google-map>
