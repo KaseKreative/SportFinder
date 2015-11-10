@@ -1,7 +1,6 @@
 
 # Swollr
-SMS<br />
-Tools--<br />
+Tools--------<br />
  NodeJS<br />
  Express<br />
  Firebase<br />
