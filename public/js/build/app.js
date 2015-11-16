@@ -1,4 +1,4 @@
-var app = angular.module('app', ['ngRoute', 'firebase', 'uiGmapgoogle-maps', 'ngGPlaces'])
+var app = angular.module('app', ['ngRoute', 'firebase', 'uiGmapgoogle-maps', 'ngGPlaces', 'ui.bootstrap'])
 	app.config(['$interpolateProvider','$routeProvider', 'uiGmapGoogleMapApiProvider', 'ngGPlacesAPIProvider', function ($interpolateProvider, $routeProvider, uiGmapGoogleMapApiProvider, ngGPlacesAPIProvider){
             uiGmapGoogleMapApiProvider.configure({
             	key: 'AIzaSyB3ckqP-H2hCxXE6YYh6RXFhebNHWH43Rc',
@@ -183,7 +183,9 @@ var app = angular.module('app', ['ngRoute', 'firebase', 'uiGmapgoogle-maps', 'ng
  			}else{
  				$scope.map = {};
                 $scope.map.markers = []; 
-               
+                $scope.today = Date();
+                $scope.form = {};
+                console.log($scope.today);
  				ngGPlacesAPI.nearbySearch({latitude: $scope.user.lat, longitude: $scope.user.long, name: $scope.gymSearch}).then(function(data){
  					console.log(data);
                     $scope.places = data;
@@ -195,7 +197,18 @@ var app = angular.module('app', ['ngRoute', 'firebase', 'uiGmapgoogle-maps', 'ng
                     $scope.map.zoom = 8;
                 });
                  $scope.templateURL = '/templates/gymForm.html';
-                 $scope.markerClick = function(marker, index){
+                 $scope.submit = function(){
+                    var reff = new Firebase("https://thesportfinder.firebaseio.com/trainees/"+$scope.user.uid);
+                    var reffObject = $firebaseObject(reff);
+                            reffObject.$loaded().then(function(data){
+                            var traineeData = authData.facebook.cachedUserProfile;
+                                reff.set({
+                                userUid : $scope.user.uid,
+                                firstName  : $scope.user.first_name,
+                                lastName   : $scope.user.last_name,
+                                imgUrl     : $scope.user.picture.data.url
+                                });   
+                            }).catch(function(err){console.log('Error :', err);})
                     console.log(marker);
                     console.log(index);
                  }
@@ -221,7 +234,7 @@ app.controller('gymSearchTrainerController', ['$scope', '$rootScope', '$firebase
                     $scope.map.zoom = 8;
                 });
                  $scope.templateURL = '/templates/trainerForm.html';
-                 $scope.markerClick = function(marker, index){
+                 $scope.submit = function(){
                     console.log(marker);
                     console.log(index);
                  }
