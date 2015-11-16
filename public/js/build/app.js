@@ -196,25 +196,40 @@ var app = angular.module('app', ['ngRoute', 'firebase', 'uiGmapgoogle-maps', 'ng
                     $scope.map.center = {latitude: $scope.user.lat, longitude: $scope.user.long}
                     $scope.map.zoom = 8;
                 });
+
                  $scope.templateURL = '/templates/gymForm.html';
-                 $scope.submit = function(){
-                    var reff = new Firebase("https://thesportfinder.firebaseio.com/trainees/"+$scope.user.uid);
-                    var reffObject = $firebaseObject(reff);
-                            reffObject.$loaded().then(function(data){
-                            var traineeData = authData.facebook.cachedUserProfile;
-                                reff.set({
-                                userUid : $scope.user.uid,
-                                firstName  : $scope.user.first_name,
-                                lastName   : $scope.user.last_name,
-                                imgUrl     : $scope.user.picture.data.url
-                                });   
-                            }).catch(function(err){console.log('Error :', err);})
-                    console.log(marker);
-                    console.log(index);
-                 }
+                
+
+                 
              
 	}	
 }]); 
+
+app.controller('gymFormController', ['$scope', '$rootScope', '$firebaseObject', function($scope, $rootScope, $firebaseObject){
+    $scope.form = {};   
+    $scope.submit = function(){
+
+            $scope.user = $rootScope.user;
+                    console.log('Boop');
+                    console.log($scope.form);
+                     var reff = new Firebase("https://thesportfinder.firebaseio.com/trainees/"+$scope.user.uid);
+                    var reffObject = $firebaseObject(reff);
+                    reffObject.$loaded().then(function(data){
+                         reff.set({
+                                userUid    : $scope.user.uid,
+                                name  : $scope.user.displayName,
+                                imgUrl     : $scope.user.profileImageURL,
+                                date : $scope.form.date,
+                                timeIn : $scope.form.timeIn,
+                                timeOut : $scope.form.timeOut,
+                                experience : $scope.form.experience,
+                                donation : $scope.form.donation,
+                                comment : $scope.form.comment
+
+                                });   
+                 }).catch(function(err){console.log('Error : ',  err);});
+              }
+}])
 
 app.controller('gymSearchTrainerController', ['$scope', '$rootScope', '$firebaseObject', '$routeParams','$location', 'ngGPlacesAPI', 'uiGmapGoogleMapApi', 'Map', function($scope, $rootScope, $firebaseObject, $routeParams, $location, ngGPlacesAPI, uiGmapGoogleMapApi, Map){ 
             if(!$scope.user){
