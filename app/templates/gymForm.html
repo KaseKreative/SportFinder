@@ -5,9 +5,9 @@
 		<label for="date">Date :</label>
 		<uib-datepicker ng-model="form.date" min-date="today"></uib-datepicker>		
 	</div>
-	<div class='gymFormInputs'>
+	<div class='gymFormInputs form-group'>
 		<label for="timeIn">Time In :</label>
-		<select id="timeIn" ng-model="form.timeIn.hour">
+		<select class='form-control' id="timeIn" ng-model="form.timeIn.hour">
 			<option value="1">1</option>
 			<option value="2">2</option>
 			<option value="3">3</option>
@@ -21,20 +21,20 @@
 			<option value="11">11</option>
 			<option value="12">12</option>
 		</select>
-		<select ng-model="form.timeIn.minutes">
+		<select class='form-control' ng-model="form.timeIn.minutes">
 			<option value="00">:00</option>
 			<option value="15">:15</option>
 			<option value="30">:30</option>
 			<option value="45">:45</option>
 		</select>
-		<select ng-model="form.timeIn.AmPm">
+		<select class='form-control' ng-model="form.timeIn.AmPm">
 			<option value="AM">AM</option>
 			<option value="PM">PM</option>
 		</select>
 	</div>
-	<div class='gymFormInputs'>
+	<div class='gymFormInputs form-group'>
 		<label for="timeOut">Time Out :</label>
-		<select class="timeOut" id="timeOut" ng-model="form.timeOut.hour">
+		<select class="timeOut form-control" id="timeOut" ng-model="form.timeOut.hour">
 			<option value="1">1</option>
 			<option value="2">2</option>
 			<option value="3">3</option>
@@ -48,33 +48,33 @@
 			<option value="11">11</option>
 			<option value="12">12</option>
 		</select>
-		<select class="timeOut" ng-model="form.timeOut.minutes">
+		<select class="timeOut form-control" ng-model="form.timeOut.minutes">
 			<option value="00">:00</option>
 			<option value="15">:15</option>
 			<option value="30">:30</option>
 			<option value="45">:45</option>
 		</select>
-		<select class="timeOut" ng-model="form.timeOut.AmPm">
+		<select class="timeOut form-control" ng-model="form.timeOut.AmPm">
 			<option value="AM">AM</option>
 			<option value="PM">PM</option>
 		</select>
 	</div>
-	<div class='gymFormInputs'>
+	<div class='gymFormInputs form-group'>
 		<label for="experience">Experience :</label>
-		<select name="experience" id="experienceSelect" ng-model='form.experience'>
+		<select class="form-control" name="experience" id="experienceSelect" ng-model='form.experience'>
 			<option value="beginner">Beginner</option>
 			<option value="intermediate">Intermediate</option>
 			<option value="advanced">Advanced</option>
 		</select>
 	</div>
-	<div class='gymFormInputs'>
+	<div class='gymFormInputs form-group'>
 		<label for="donation">Donation :</label>
-		<input type="number" ng-model="form.donation" id='donation' step='any' min='0' placeholder='$'>
+		<input class="form-control" type="number" ng-model="form.donation" id='donation' step='any' min='0' placeholder='$'>
 	</div>
-	<div class='gymFormInputs'>
+	<div class='gymFormInputs form-group'>
 		<label id="commentLabel" for="comment">Comment :</label>
-		<textarea name="comment" id="comment" cols="20" rows="5" ng-model="form.comment"></textarea>
+		<textarea class="form-control" name="comment" id="comment" cols="20" rows="5" ng-model="form.comment"></textarea>
 	</div>
-	<button ng-click="submit()">Submit</button>
+	<button class="btn" ng-click="submit()">Submit</button>
 </form>
 </div>
