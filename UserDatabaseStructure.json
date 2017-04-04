@@ -1,0 +1,16 @@
+{
+  "users" : {
+    "facebook:931005823614331" : {
+      "description" : "trainee D",
+      "facebookID" : "931005823614331",
+      "firstName" : "Kase",
+      "gender" : "male",
+      "imgUrl" : "https://scontent.xx.fbcdn.net/hprofile-xfa1/v/t1.0-1/p100x100/11200620_853945184653729_2627398189022526405_n.jpg?oh=27c6cd522a958025d8108e722efddd50&oe=56BE2FC0",
+      "lastName" : "Tebo",
+      "link" : "https://www.facebook.com/app_scoped_user_id/931005823614331/",
+      "name" : "Kase Tebo",
+      "trainer" : false,
+      "uid" : "facebook:931005823614331"
+    }
+  }
+}

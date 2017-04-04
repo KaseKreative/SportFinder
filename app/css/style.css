@@ -1,0 +1,17 @@
+.angular-google-map-container {
+	height: 400px;
+}
+label {
+	display:inline-block;
+	text-align: right;
+	width:75px;
+}
+
+#markerForm{
+	width:110%;
+	padding:5px;
+}
+
+.gymFormInputs, textarea {
+	padding:2px;
+}

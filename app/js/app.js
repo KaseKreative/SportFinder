@@ -1,9 +1,15 @@
-var app = angular.module('app', ['ngRoute', 'firebase', 'uiGmapgoogle-maps'])
-	app.config(['$interpolateProvider','$routeProvider', 'uiGmapGoogleMapApiProvider', function ($interpolateProvider, $routeProvider, uiGmapGoogleMapApiProvider){
+var app = angular.module('app', ['ngRoute', 'firebase', 'uiGmapgoogle-maps', 'ngGPlaces', 'ui.bootstrap'])
+	app.config(['$interpolateProvider','$routeProvider', 'uiGmapGoogleMapApiProvider', 'ngGPlacesAPIProvider', function ($interpolateProvider, $routeProvider, uiGmapGoogleMapApiProvider, ngGPlacesAPIProvider){
             uiGmapGoogleMapApiProvider.configure({
-            	key: 'AIzaSyBcwSefNOCksg0CrkHZo58QPKBggYLrFIc',
+            	key: 'AIzaSyB3ckqP-H2hCxXE6YYh6RXFhebNHWH43Rc',
             	v: '3.20',
             	libraries: 'places'
+            });
+            ngGPlacesAPIProvider.setDefaults({
+            	radius:5000,
+            	types: 'gym',
+            	nearbySearchKeys: ['name', 'reference', 'vicinity', 'rating', 'opening_hours', 'geometry'],
+            	placeDetailsKeys: ['rating', 'opening_hours', 'geometry']
             });
             $interpolateProvider.startSymbol('{[{');
             $interpolateProvider.endSymbol('}]}');
@@ -22,6 +28,9 @@ var app = angular.module('app', ['ngRoute', 'firebase', 'uiGmapgoogle-maps'])
             }).when("/gymSearch", {
             	templateUrl: "templates/gymSearch.html",
             	controller: "gymSearchController"
+            }).when("/gymSearchTrainer", {
+                templateUrl: "templates/gymSearchTrainer.html",
+                controller: "gymSearchTrainerController"
             }).otherwise({
                 redirectTo: "/"
             })
@@ -60,6 +69,7 @@ var app = angular.module('app', ['ngRoute', 'firebase', 'uiGmapgoogle-maps'])
 			 					console.log('step4');
 			 					$location.path('/TorT');
 			 				}else{
+                                authData.facebook.uid = authData.uid;
 			 					$rootScope.user = authData.facebook;
 			 					$location.path('/searchDashboard');	
 			 				}	
@@ -109,6 +119,7 @@ var app = angular.module('app', ['ngRoute', 'firebase', 'uiGmapgoogle-maps'])
  			console.log(reffObject);
  			reffObject.$loaded().then(function(data){
  				reffObject.trainer = false;
+                $rootScope.user.trainer = false;
  			reffObject.$save().then(function(ref){
  					console.log(ref);
  				}, function(err){
@@ -124,6 +135,7 @@ var app = angular.module('app', ['ngRoute', 'firebase', 'uiGmapgoogle-maps'])
 
  			reffObject.$loaded().then(function(data){
  				reffObject.trainer = true;
+                $rootScope.user.trainer = true;
  			reffObject.$save().then(function(ref){
  					console.log(ref);
  				}, function(err){
@@ -139,9 +151,6 @@ var app = angular.module('app', ['ngRoute', 'firebase', 'uiGmapgoogle-maps'])
 		if(!$scope.user){
  				$location.path('/');
  			}else{
- 				$scope.map = {}
- 				$scope.map.center = { latitude: 45, longitude: -73 };
- 				$scope.map.zoom =  8
  				function showPosition(position) {
  					var lat = position.coords.latitude;
  					var long = position.coords.longitude;
@@ -151,41 +160,101 @@ var app = angular.module('app', ['ngRoute', 'firebase', 'uiGmapgoogle-maps'])
  				}
  				navigator.geolocation.getCurrentPosition(showPosition);
 
- 			$scope.searchGym = function(){
- 				$rootScope.gymSearch = $scope.gym.search;
- 				console.log($rootScope.gymSearch);
- 				$location.path('/gymSearch');
- 			}
-
+ 				$scope.searchGym = function(){
+                    console.log($scope.user);
+                    var reff = new Firebase("https://thesportfinder.firebaseio.com/users/"+$scope.user.uid);
+                    var reffObject = $firebaseObject(reff);
+                    reffObject.$loaded().then(function(data){
+                        console.log(data);
+                        $rootScope.gymSearch = $scope.gym.search;
+                        if(data.trainer == true){
+                        $location.path('/gymSearchTrainer');
+                        } else {
+ 					  $location.path('/gymSearch');
+                        }
+                    }).catch(function(err){console.log('Error : ',  err);});
+ 				}
  			}
 	}]);
 
-	app.controller('gymSearchController', ['$scope', '$rootScope', '$firebaseObject', '$routeParams','$location', 'Map', function($scope, $rootScope, $firebaseObject, $routeParams, $location, Map){ 
+	app.controller('gymSearchController', ['$scope', '$rootScope', '$firebaseObject', '$routeParams','$location', 'ngGPlacesAPI', 'uiGmapGoogleMapApi', 'Map', function($scope, $rootScope, $firebaseObject, $routeParams, $location, ngGPlacesAPI, uiGmapGoogleMapApi, Map){ 
    			if(!$scope.user){
  				$location.path('/');
  			}else{
-    console.log($scope.gymSearch);
-    $scope.place = {};
-        Map.search($scope.gymSearch)
-        .then(
-            function(res) { // success
-                Map.addMarker(res);
-                $scope.place.name = res.name;
-                $scope.place.lat = res.geometry.location.lat();
-                $scope.place.lng = res.geometry.location.lng();
-            },
-            function(status) { // error
-                $scope.apiError = true;
-                $scope.apiStatus = status;
-            }
-        );
-    
-    $scope.send = function() {
-        alert($scope.place.name + ' : ' + $scope.place.lat + ', ' + $scope.place.lng);    
-    }
-    
-    Map.init();
-	}
+ 				$scope.map = {};
+                $scope.map.markers = []; 
+                $scope.today = Date();
+                $scope.form = {};
+                console.log($scope.today);
+ 				ngGPlacesAPI.nearbySearch({latitude: $scope.user.lat, longitude: $scope.user.long, name: $scope.gymSearch}).then(function(data){
+ 					console.log(data);
+                    $scope.places = data;
+                    $scope.map.markers = data;
+                    
+ 				});
+                 uiGmapGoogleMapApi.then(function(maps){
+                    $scope.map.center = {latitude: $scope.user.lat, longitude: $scope.user.long}
+                    $scope.map.zoom = 8;
+                });
+
+                 $scope.templateURL = '/templates/gymForm.html';
+                
+
+                 
+             
+	}	
+}]); 
+
+app.controller('gymFormController', ['$scope', '$rootScope', '$firebaseObject', function($scope, $rootScope, $firebaseObject){
+    $scope.form = {};   
+    $scope.submit = function(){
+
+            $scope.user = $rootScope.user;
+                    console.log('Boop');
+                    console.log($scope.form);
+                     var reff = new Firebase("https://thesportfinder.firebaseio.com/trainees/"+$scope.user.uid);
+                    var reffObject = $firebaseObject(reff);
+                    reffObject.$loaded().then(function(data){
+                         reff.set({
+                                userUid    : $scope.user.uid,
+                                name  : $scope.user.displayName,
+                                imgUrl     : $scope.user.profileImageURL,
+                                date : $scope.form.date,
+                                timeIn : $scope.form.timeIn,
+                                timeOut : $scope.form.timeOut,
+                                experience : $scope.form.experience,
+                                donation : $scope.form.donation,
+                                comment : $scope.form.comment
+
+                                });   
+                 }).catch(function(err){console.log('Error : ',  err);});
+              }
+}])
+
+app.controller('gymSearchTrainerController', ['$scope', '$rootScope', '$firebaseObject', '$routeParams','$location', 'ngGPlacesAPI', 'uiGmapGoogleMapApi', 'Map', function($scope, $rootScope, $firebaseObject, $routeParams, $location, ngGPlacesAPI, uiGmapGoogleMapApi, Map){ 
+            if(!$scope.user){
+                $location.path('/');
+            }else{
+                $scope.map = {};
+                $scope.map.markers = []; 
+               
+                ngGPlacesAPI.nearbySearch({latitude: $scope.user.lat, longitude: $scope.user.long, name: $scope.gymSearch}).then(function(data){
+                    console.log(data);
+                    $scope.places = data;
+                    $scope.map.markers = data;
+                    
+                });
+                 uiGmapGoogleMapApi.then(function(maps){
+                    $scope.map.center = {latitude: $scope.user.lat, longitude: $scope.user.long}
+                    $scope.map.zoom = 8;
+                });
+                 $scope.templateURL = '/templates/trainerForm.html';
+                 $scope.submit = function(){
+                    console.log(marker);
+                    console.log(index);
+                 }
+             
+    }   
 }]); 
 
 // =============================== SERVICES ====================================
@@ -194,20 +263,25 @@ var app = angular.module('app', ['ngRoute', 'firebase', 'uiGmapgoogle-maps'])
 
 app.service('Map', function($q) {
     
-    this.init = function() {
+    this.init = function(lat, long) {
+        console.log(lat, ' , ', long);
         var options = {
-            center: new google.maps.LatLng($scope.user.lat, $scope.user.long),
+            center: new google.maps.LatLng(lat, long),
             zoom: 8,
             disableDefaultUI: true    
         }
+        console.log(options);
         this.map = new google.maps.Map(
             document.getElementById("map"), options
         );
-        this.places = new google.maps.places.PlacesService(this.map);
+        console.log(this.map);
+        // this.places = new google.maps.places.PlacesService(this.map);
     }
     
     this.search = function(str) {
         var d = $q.defer();
+        console.log('This is Places SEARCH :', this.places);
+        console.log(str, '----------');
         this.places.textSearch({query: str}, function(results, status) {
             if (status == 'OK') {
                 d.resolve(results[0]);
@@ -217,14 +291,17 @@ app.service('Map', function($q) {
         return d.promise;
     }
     
-    this.addMarker = function(res) {
+    this.addMarkers = function(res) {
+        console.log(res.geometry.location.A,' , ',res.geometry.location.F);
+        myLatLng = new google.maps.LatLng(res.geometry.location.A, res.geometry.location.F);
+        console.log(myLatLng)
         if(this.marker) this.marker.setMap(null);
         this.marker = new google.maps.Marker({
             map: this.map,
-            position: res.geometry.location,
+            position: myLatLng,
             animation: google.maps.Animation.DROP
         });
-        this.map.setCenter(res.geometry.location);
+        this.marker.setMap(this.map);
     }
     
 });
